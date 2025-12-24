@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Love From Dad ❤️!</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="clock" class="clock"></div>
+
+<h1>🧮 Love From Dad ❤️!</h1>
+
+<div id="question-container"></div>
+
+<div class="actions">
+  <button id="newSetBtn">Đổi đề</button>
+  <button id="submitBtn">Nộp bài</button>
+  <button id="showAnswerBtn">Hiện đáp án</button>
+</div>
+
+<div id="summary"></div>
+
+
+<!-- Password modal for generating new set -->
+<div id="pwdOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="pwdTitle">
+  <div class="modal">
+    <div class="modal-title" id="pwdTitle">Xác nhận đổi đề</div>
+    <div class="modal-desc">Nhập mật khẩu (4 số).</div>
+    <input id="pwdInput" class="modal-input" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="VD: 2350" />
+    <div id="pwdError" class="modal-error hidden">Sai mật khẩu. Vui lòng thử lại.</div>
+    <div class="modal-actions">
+      <button id="pwdCancelBtn" type="button">Hủy</button>
+      <button id="pwdOkBtn" type="button">Xác nhận</button>
+    </div>
+    <div class="modal-hint">Mẹo: nhấn <b>Enter</b> để xác nhận.</div>
+  </div>
+</div>
+
+
+<script src="js/app.bundle.js"></script>
+</body>
+</html>

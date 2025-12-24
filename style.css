@@ -1,0 +1,190 @@
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+}
+
+.question {
+  margin-bottom: 12px;
+}
+
+.question input {
+  width: 60px;
+  padding: 4px;
+  font-size: 16px;
+}
+
+.question.correct input {
+  border: 2px solid green;
+}
+
+.question.wrong input {
+  border: 2px solid red;
+}
+
+.answer-line {
+  margin-top: 4px;
+  color: #0066cc;
+  font-style: italic;
+}
+
+.actions {
+  margin-top: 20px;
+}
+
+button {
+  padding: 8px 14px;
+  font-size: 16px;
+  margin-right: 10px;
+}
+
+#summary {
+  margin-top: 20px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+
+/* ===== Table layout ===== */
+.question-table{
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 760px;
+}
+
+.question-table th,
+.question-table td{
+  border: 1px solid rgba(0,0,0,0.15);
+  padding: 10px 12px;
+  vertical-align: middle;
+}
+
+.question-table th{
+  background: rgba(0,0,0,0.03);
+  text-align: left;
+}
+
+.question-table .col-no{
+  width: 56px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.question-table .col-a{
+  width: 220px;
+}
+
+.answer-input{
+  width: 88px;
+  padding: 6px 8px;
+  font-size: 16px;
+}
+
+/* Correct / wrong highlight */
+.question-row.correct{
+  background: rgba(46, 204, 113, 0.12);
+}
+
+.question-row.wrong{
+  background: rgba(231, 76, 60, 0.10);
+}
+
+.answer-cell{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* ===== Top-right clock ===== */
+.clock{
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  padding: 6px 10px;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.9);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 14px;
+  user-select: none;
+}
+
+/* ===== Small password modal ===== */
+.overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 9999;
+}
+
+.hidden{ display: none !important; }
+
+.modal{
+  width: 360px;
+  max-width: 100%;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+}
+
+.modal-title{
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.modal-desc{
+  font-size: 13px;
+  line-height: 1.35;
+  color: rgba(0,0,0,0.75);
+  margin-bottom: 10px;
+}
+
+.modal-input{
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 18px;
+  letter-spacing: 0.12em;
+  padding: 10px 12px;
+  border: 1px solid rgba(0,0,0,0.25);
+  border-radius: 10px;
+  outline: none;
+}
+
+.modal-input:focus{
+  border-color: rgba(0,0,0,0.55);
+}
+
+.modal-error{
+  margin-top: 8px;
+  font-size: 13px;
+  color: #b00020;
+}
+
+.modal-actions{
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.modal-actions button{
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.22);
+  background: #f7f7f7;
+  cursor: pointer;
+}
+
+.modal-actions button:hover{
+  background: #efefef;
+}
+
+.modal-hint{
+  margin-top: 10px;
+  font-size: 12px;
+  color: rgba(0,0,0,0.6);
+}
