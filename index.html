@@ -3,40 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <title>Love From Dad ❤️!</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<div id="clock" class="clock"></div>
 
-<h1>🧮 Love From Dad ❤️!</h1>
+<div class="container-fluid py-3">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <h1 class="h3 m-0">🧮 Love From Dad ❤️!</h1>
+    <span id="clock" class="badge text-bg-light border rounded-pill px-3 py-2 fw-semibold"></span>
+  </div>
 
-<div id="question-container"></div>
+  <div class="mb-3" id="question-container"></div>
 
-<div class="actions">
-  <button id="newSetBtn">Đổi đề</button>
-  <button id="configBtn">Cấu hình</button>
-  <button id="saveDraftBtn">Lưu tạm</button>
-  <button id="submitBtn">Nộp bài</button>
-  <button id="showAnswerBtn">Hiện đáp án</button>
+  <div class="d-flex flex-wrap gap-2 mb-2">
+    <button id="newSetBtn" class="btn btn-outline-secondary btn-sm">Đổi đề</button>
+    <button id="configBtn" class="btn btn-outline-secondary btn-sm">Cấu hình</button>
+    <button id="saveDraftBtn" class="btn btn-outline-secondary btn-sm">Lưu tạm</button>
+    <button id="submitBtn" class="btn btn-primary btn-sm">Nộp bài</button>
+    <button id="showAnswerBtn" class="btn btn-outline-primary btn-sm">Hiện đáp án</button>
+  </div>
+
+  <div id="summary" class="small text-muted"></div>
 </div>
 
-<div id="summary"></div>
-
-
-
 <!-- Settings modal -->
+
 <div id="settingsOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-  <div class="modal modal--wide">
+  <div class="app-modal app-modal--wide bg-white rounded-4 shadow p-3 p-md-4">
     <div class="modal-header">
-      <div class="modal-title" id="settingsTitle">Cấu hình đề bài</div>
-      <button id="settingsCloseBtn" class="icon-btn" type="button" aria-label="Đóng">✕</button>
+      <div class="modal-title h5 m-0" id="settingsTitle">Cấu hình đề bài</div>
+      <button id="settingsCloseBtn" class="btn btn-sm btn-outline-secondary" type="button" aria-label="Đóng">✕</button>
     </div>
 
     <div class="settings-grid">
       <label class="field">
         <div class="field-label">Lớp (Preset)</div>
-        <select id="presetSelect" class="modal-select">
+        <select id="presetSelect" class="form-select form-select-sm">
           <option value="grade1">grade1</option>
           <option value="grade2">grade2</option>
           <option value="grade3">grade3</option>
@@ -47,12 +52,12 @@
 
       <label class="field">
         <div class="field-label">Số câu hỏi (questionCount)</div>
-        <input id="questionCountInput" class="modal-input" type="number" min="1" step="1" />
+        <input id="questionCountInput" class="form-control form-control-sm" type="number" min="1" step="1" />
       </label>
 
       <label class="field">
         <div class="field-label">Số hạng (termCount)</div>
-        <input id="termCountInput" class="modal-input" type="number" min="2" step="1" />
+        <input id="termCountInput" class="form-control form-control-sm" type="number" min="2" step="1" />
       </label>
 
       <label class="field field--checkbox">
@@ -94,11 +99,11 @@
       </div>
     </div>
 
-    <div class="modal-actions">
+    <div class="modal-actions d-flex justify-content-end gap-2 mt-3">
       <button id="resetPresetBtn" type="button">Khôi phục mặc định</button>
       <div class="modal-actions-right">
-        <button id="settingsCancelBtn" type="button">Hủy</button>
-        <button id="settingsSaveBtn" type="button">Lưu cấu hình</button>
+        <button id="settingsCancelBtn" type="button" class="btn btn-outline-secondary btn-sm">Hủy</button>
+        <button id="settingsSaveBtn" type="button" class="btn btn-primary btn-sm">Lưu cấu hình</button>
       </div>
     </div>
   </div>
@@ -106,20 +111,27 @@
 
 <!-- Password modal for generating new set -->
 <div id="pwdOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="pwdTitle">
-  <div class="modal">
-    <div class="modal-title" id="pwdTitle">Xác nhận đổi đề</div>
+  <div class="app-modal bg-white rounded-4 shadow p-3 p-md-4">
+    <div class="modal-title h5 m-0" id="pwdTitle">Xác nhận đổi đề</div>
     <div class="modal-desc">Nhập mật khẩu (4 số).</div>
-    <input id="pwdInput" class="modal-input" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="VD: 2350" />
+    <input id="pwdInput" class="form-control form-control-sm" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="VD: 2350" />
     <div id="pwdError" class="modal-error hidden">Sai mật khẩu. Vui lòng thử lại.</div>
-    <div class="modal-actions">
-      <button id="pwdCancelBtn" type="button">Hủy</button>
-      <button id="pwdOkBtn" type="button">Xác nhận</button>
+    <div class="modal-actions d-flex justify-content-end gap-2 mt-3">
+      <button id="pwdCancelBtn" type="button" class="btn btn-outline-secondary btn-sm">Hủy</button>
+      <button id="pwdOkBtn" type="button" class="btn btn-primary btn-sm">Xác nhận</button>
     </div>
     <div class="modal-hint">Mẹo: nhấn <b>Enter</b> để xác nhận.</div>
   </div>
 </div>
 
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/app.bundle.js"></script>
+</body>
+</html>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/app.bundle.js"></script>
 </body>
 </html>

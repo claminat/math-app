@@ -318,7 +318,7 @@ function clearSummary() {
     c.innerHTML = "";
 
     const table = document.createElement("table");
-    table.className = "question-table";
+    table.className = "question-table table table-bordered table-sm table-hover align-middle";
     table.innerHTML = `
       <thead>
         <tr>
@@ -346,7 +346,10 @@ function clearSummary() {
       tbody.appendChild(tr);
     });
 
-    c.appendChild(table);
+    const wrap = document.createElement("div");
+    wrap.className = "table-responsive";
+    wrap.appendChild(table);
+    c.appendChild(wrap);
   }
 
 function collectAnswersFromInputs() {
@@ -401,11 +404,11 @@ function applyAnswersToInputs(answerMap) {
     // unknownIndex === terms.length => result is unknown
     if (q.unknownIndex === q.terms.length) {
       const left = q.terms.join(op);
-      return `${left} = <input class="answer-input" data-id="${q.id}" type="number" inputmode="numeric" />`;
+      return `${left} = <input class="form-control form-control-sm d-inline-block w-auto answer-input" style="width:110px" data-id="${q.id}" type="number" inputmode="numeric" />`;
     }
 
     const left = q.terms
-      .map((t, idx) => idx === q.unknownIndex ? `<input class="answer-input" data-id="${q.id}" type="number" inputmode="numeric" />` : t)
+      .map((t, idx) => idx === q.unknownIndex ? `<input class="form-control form-control-sm d-inline-block w-auto answer-input" style="width:110px" data-id="${q.id}" type="number" inputmode="numeric" />` : t)
       .join(op);
 
     return `${left} = ${q.result}`;
