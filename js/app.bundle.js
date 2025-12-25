@@ -2,89 +2,171 @@
   "use strict";
 
   // ===== config.js =====
-  const PRESETS = {
-    grade1: {
-      questionCount: 10,
-      operations: ["addition"],
-      termCount: 2,
-      allowCarry: false,
-      numberRanges: [{ max: 10, weight: 100 }]
-    },
+  
+// Default presets (cấu hình mặc định trong file)
+const DEFAULT_PRESETS = {
+  grade1: {
+    questionCount: 10,
+    operations: ["addition"],
+    termCount: 2,
+    allowCarry: false,
+    numberRanges: [{ max: 10, weight: 100 }]
+  },
 
-    grade2: {
-      questionCount: 20,
-      operations: ["addition", "subtraction"],
-      termCount: 2,
-      allowCarry: true,
-      numberRanges: [{ max: 99, weight: 100 }]
-    },
+  grade2: {
+    questionCount: 20,
+    operations: ["addition", "subtraction"],
+    termCount: 2,
+    allowCarry: true,
+    numberRanges: [{ max: 99, weight: 100 }]
+  },
 
-    grade3: {
-      questionCount: 20,
-      operations: ["addition", "subtraction", "multiplication"],
-      termCount: 3,
-      allowCarry: true,
-      numberRanges: [
-        { max: 99, weight: 10 },
-        { min: 100, max: 999, weight: 90 }
-      ]
-    },
+  grade3: {
+    questionCount: 20,
+    operations: ["addition", "subtraction", "multiplication"],
+    termCount: 3,
+    allowCarry: true,
+    numberRanges: [
+      { max: 99, weight: 70 },
+      { max: 999, weight: 30 }
+    ]
+  },
 
-    grade4: {
-      questionCount: 25,
-      operations: ["addition", "subtraction", "multiplication", "division"],
-      termCount: 4,
-      allowCarry: true,
-      numberRanges: [
-        { max: 99, weight: 50 },
-        { min: 100, max: 999, weight: 50 }
-      ]
-    }
-  };
-
-  // Chọn lớp (đổi preset tại đây)
-  const CONFIG = PRESETS.grade3;
-
-  const PRESET_NAME = "grade3";
-  const STORAGE_KEY = "math_app_state_v1";
-
-  function loadSavedQuestions() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      const data = JSON.parse(raw);
-      if (!data || data.preset !== PRESET_NAME) return null;
-      if (!Array.isArray(data.questions)) return null;
-      if (data.questions.length !== CONFIG.questionCount) return null;
-      return data.questions;
-    } catch (e) {
-      return null;
-    }
+  grade4: {
+    questionCount: 25,
+    operations: ["addition", "subtraction", "multiplication", "division"],
+    termCount: 4,
+    allowCarry: true,
+    numberRanges: [
+      { max: 99, weight: 50 },
+      { max: 999, weight: 50 }
+    ]
   }
+};
 
-  function saveQuestions(questions) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        preset: PRESET_NAME,
-        questions
-      }));
-    } catch (e) {
-      // ignore storage errors
+const DEFAULT_SELECTED_PRESET_KEY = "grade3";
+
+const CONFIG_STORAGE_KEY = "math_app_config_v1";
+const EXAM_STORAGE_KEY = "math_app_exam_v1";
+  const ANS_STORAGE_PREFIX = "math_app_answers_v1:";
+
+function deepClone(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function loadAppConfig() {
+  try {
+    const raw = localStorage.getItem(CONFIG_STORAGE_KEY);
+    if (!raw) {
+      return {
+        selectedPresetKey: DEFAULT_SELECTED_PRESET_KEY,
+        presets: deepClone(DEFAULT_PRESETS)
+      };
     }
-  }
+    const data = JSON.parse(raw);
+    if (!data || typeof data !== "object") throw new Error("bad config");
+    const selectedPresetKey = (data.selectedPresetKey || DEFAULT_SELECTED_PRESET_KEY);
+    const presets = (data.presets && typeof data.presets === "object") ? data.presets : deepClone(DEFAULT_PRESETS);
 
-  function buildNewQuestions() {
-    const qs = [];
-    for (let i = 0; i < CONFIG.questionCount; i++) {
-      qs.push(generateOneQuestion(CONFIG, i));
-    }
-    return qs;
-  }
+    // Ensure all grades exist (merge defaults)
+    const merged = deepClone(DEFAULT_PRESETS);
+    ["grade1", "grade2", "grade3", "grade4"].forEach((k) => {
+      if (presets[k]) merged[k] = Object.assign({}, merged[k], presets[k]);
+    });
 
-  function clearSummary() {
-    const el = document.getElementById("summary");
-    if (el) el.innerHTML = "";
+    return { selectedPresetKey, presets: merged };
+  } catch (e) {
+    return {
+      selectedPresetKey: DEFAULT_SELECTED_PRESET_KEY,
+      presets: deepClone(DEFAULT_PRESETS)
+    };
   }
+}
+
+function saveAppConfig(appConfig) {
+  try {
+    localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify({
+      selectedPresetKey: appConfig.selectedPresetKey,
+      presets: appConfig.presets,
+      updatedAt: Date.now()
+    }));
+  } catch (e) {
+    // ignore
+  }
+}
+
+function loadExamState() {
+  try {
+    const raw = localStorage.getItem(EXAM_STORAGE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!data || typeof data !== "object") return null;
+    if (!Array.isArray(data.questions)) return null;
+    if (!data.configSnapshot || typeof data.configSnapshot !== "object") return null;
+    if (!data.presetKey || typeof data.presetKey !== "string") return null;
+
+    // basic shape validation
+    if (typeof data.configSnapshot.questionCount !== "number") return null;
+    if (data.questions.length !== data.configSnapshot.questionCount) return null;
+    return data;
+  } catch (e) {
+    return null;
+  }
+}
+
+function saveExamState(presetKey, configSnapshot, questions) {
+  const createdAt = Date.now();
+  try {
+    localStorage.setItem(EXAM_STORAGE_KEY, JSON.stringify({
+      presetKey,
+      configSnapshot,
+      questions,
+      createdAt
+    }));
+  } catch (e) {
+    // ignore
+  }
+  return createdAt;
+}
+
+function loadAnswerState(examId) {
+  try {
+    if (typeof examId !== "number") return null;
+    const raw = localStorage.getItem(ANS_STORAGE_PREFIX + String(examId));
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!data || typeof data !== "object") return null;
+    if (!data.answers || typeof data.answers !== "object") return null;
+    return data;
+  } catch (e) {
+    return null;
+  }
+}
+
+function saveAnswerState(examId, answers) {
+  try {
+    if (typeof examId !== "number") return;
+    localStorage.setItem(ANS_STORAGE_PREFIX + String(examId), JSON.stringify({
+      answers: answers || {},
+      savedAt: Date.now()
+    }));
+  } catch (e) {
+    // ignore
+  }
+}
+
+function buildNewQuestions(config) {
+  const qs = [];
+  for (let i = 0; i < config.questionCount; i++) {
+    qs.push(generateOneQuestion(config, i));
+  }
+  return qs;
+}
+
+function clearSummary() {
+  const el = document.getElementById("summary");
+  if (el) el.innerHTML = "";
+}
 
   // ===== utils.js =====
   function randomInt(min, max) {
@@ -267,6 +349,29 @@
     c.appendChild(table);
   }
 
+function collectAnswersFromInputs() {
+  const inputs = Array.from(document.querySelectorAll("input.answer-input"));
+  const map = {};
+  inputs.forEach(i => {
+    const qid = i.getAttribute("data-id");
+    map[qid] = (i.value || "").trim();
+  });
+  return map;
+}
+
+function applyAnswersToInputs(answerMap) {
+  if (!answerMap || typeof answerMap !== "object") return;
+  const inputs = Array.from(document.querySelectorAll("input.answer-input"));
+  inputs.forEach(i => {
+    const qid = i.getAttribute("data-id");
+    if (Object.prototype.hasOwnProperty.call(answerMap, qid)) {
+      i.value = String(answerMap[qid] ?? "");
+    }
+  });
+}
+
+
+
   function buildText(q, hideX) {
     const map = {
       addition: "+",
@@ -435,8 +540,19 @@
       }
     };
 
-    const open = (cb) => {
-      onOk = cb;
+    const open = (arg) => {
+      // arg: function OR { title, desc, onOk }
+      if (typeof arg === "function") {
+        onOk = arg;
+      } else if (arg && typeof arg === "object") {
+        onOk = arg.onOk;
+        const tEl = document.getElementById("pwdTitle");
+        const dEl = overlay.querySelector(".modal-desc");
+        if (tEl && typeof arg.title === "string") tEl.textContent = arg.title;
+        if (dEl && typeof arg.desc === "string") dEl.textContent = arg.desc;
+      } else {
+        onOk = null;
+      }
       input.value = "";
       hideError();
       overlay.classList.remove("hidden");
@@ -481,43 +597,450 @@
     return { open };
   }
 
-document.addEventListener("DOMContentLoaded", () => {
-    // 1) Load saved set (survive F5)
-    const saved = loadSavedQuestions();
-    const initialQuestions = saved || buildNewQuestions();
 
-    // If no saved set, persist immediately
-    if (!saved) saveQuestions(initialQuestions);
+  document.addEventListener("DOMContentLoaded", () => {
+    // Runtime app config (from storage; fallback to defaults in file)
+    let appConfig = loadAppConfig();
 
-    // state is re-assignable (used by buttons)
-    state = {
-      questions: initialQuestions,
-      submitted: false,
-      answersShown: false
-    };
+    // Load exam state (survive F5). If missing, generate immediately from current config.
+    const savedExam = loadExamState();
+
+    function normalizeConfig(cfg) {
+      const c = deepClone(cfg || {});
+      c.questionCount = parseInt(c.questionCount, 10) || 10;
+      c.termCount = parseInt(c.termCount, 10) || 2;
+      c.allowCarry = !!c.allowCarry;
+      c.operations = Array.isArray(c.operations) ? c.operations.slice() : ["addition"];
+      c.numberRanges = Array.isArray(c.numberRanges) ? c.numberRanges.map(r => Object.assign({}, r)) : [{ max: 10, weight: 100 }];
+
+      // Normalize ranges:
+      // - first range: min defaults to 0
+      // - subsequent range: if min missing and prev.max exists, min = prev.max + 1 (helps users avoid "999 includes <100")
+      for (let i = 0; i < c.numberRanges.length; i++) {
+        const r = c.numberRanges[i];
+        const prev = c.numberRanges[i - 1];
+        const hasMin = (r.min !== undefined && r.min !== null && String(r.min).trim() !== "");
+        if (!hasMin) {
+          if (i === 0) r.min = 0;
+          else if (prev && prev.max !== undefined && prev.max !== null) {
+            const pm = parseInt(prev.max, 10);
+            if (!Number.isNaN(pm)) r.min = pm + 1;
+            else r.min = 0;
+          } else r.min = 0;
+        }
+        r.min = parseInt(r.min, 10);
+        r.max = parseInt(r.max, 10);
+        r.weight = parseFloat(r.weight);
+      }
+
+      return c;
+    }
+
+    let state;
+    let currentExamId = null;
+    let currentConfigSnapshot = null;
+
+    if (savedExam) {
+      currentExamId = (typeof savedExam.createdAt === "number") ? savedExam.createdAt : ((typeof savedExam.createdAt === "string" && /^\d+$/.test(savedExam.createdAt)) ? parseInt(savedExam.createdAt, 10) : null);
+      currentConfigSnapshot = savedExam.configSnapshot;
+
+      // Backward compatibility: older saved exams may not have createdAt
+      if (currentExamId === null) {
+        currentExamId = Date.now();
+        try {
+          localStorage.setItem(EXAM_STORAGE_KEY, JSON.stringify({
+            presetKey: savedExam.presetKey,
+            configSnapshot: savedExam.configSnapshot,
+            questions: savedExam.questions,
+            createdAt: currentExamId
+          }));
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      state = { questions: savedExam.questions, submitted: false, answersShown: false };
+    } else {
+      const presetKey = appConfig.selectedPresetKey || DEFAULT_SELECTED_PRESET_KEY;
+      const cfg = normalizeConfig(appConfig.presets[presetKey]);
+      const qs = buildNewQuestions(cfg);
+      currentExamId = saveExamState(presetKey, cfg, qs);
+      currentConfigSnapshot = cfg;
+      saveAnswerState(currentExamId, {});
+      state = { questions: qs, submitted: false, answersShown: false };
+    }
 
     renderQuestions(state.questions);
+
+    // Restore saved answers for this exam (avoid mixing answers across exams)
+    const savedAnsState = loadAnswerState(currentExamId);
+    if (savedAnsState && typeof currentExamId === "number") {
+      applyAnswersToInputs(savedAnsState.answers);
+    }
 
     // Clock + password modal
     setupClock();
     const pwdModal = setupPasswordModal();
 
-    // Bind actions
-    document.getElementById("submitBtn").onclick = () => handleSubmit(state);
-    document.getElementById("showAnswerBtn").onclick = () => showAnswers(state);
+    // ===== Settings modal =====
+    const settings = {
+      overlay: document.getElementById("settingsOverlay"),
+      closeBtn: document.getElementById("settingsCloseBtn"),
+      cancelBtn: document.getElementById("settingsCancelBtn"),
+      saveBtn: document.getElementById("settingsSaveBtn"),
+      resetBtn: document.getElementById("resetPresetBtn"),
+      presetSelect: document.getElementById("presetSelect"),
+      questionCountInput: document.getElementById("questionCountInput"),
+      termCountInput: document.getElementById("termCountInput"),
+      allowCarryInput: document.getElementById("allowCarryInput"),
+      opChecks: Array.from(document.querySelectorAll(".opCheck")),
+      tbody: document.getElementById("rangesTbody"),
+      addRangeBtn: document.getElementById("addRangeBtn"),
+      err: document.getElementById("settingsError")
+    };
+
+    let draft = null; // { selectedPresetKey, presets }
+    let draftCurrentKey = null;
+
+    function showSettingsError(msg) {
+      if (!settings.err) return;
+      settings.err.textContent = msg;
+      settings.err.classList.remove("hidden");
+    }
+
+    function hideSettingsError() {
+      if (!settings.err) return;
+      settings.err.textContent = "";
+      settings.err.classList.add("hidden");
+    }
+
+    function openSettings() {
+      if (!settings.overlay) return;
+      draft = deepClone(appConfig);
+      draftCurrentKey = draft.selectedPresetKey || DEFAULT_SELECTED_PRESET_KEY;
+
+      // preset select
+      if (settings.presetSelect) {
+        settings.presetSelect.value = draftCurrentKey;
+      }
+
+      renderSettingsFormForKey(draftCurrentKey);
+      hideSettingsError();
+
+      settings.overlay.classList.remove("hidden");
+      setTimeout(() => settings.presetSelect && settings.presetSelect.focus(), 0);
+    }
+
+    function closeSettings() {
+      if (!settings.overlay) return;
+      settings.overlay.classList.add("hidden");
+      hideSettingsError();
+      draft = null;
+      draftCurrentKey = null;
+    }
+
+    function renderRangesTable(ranges) {
+      if (!settings.tbody) return;
+      settings.tbody.innerHTML = "";
+      ranges.forEach((r, idx) => {
+        const tr = document.createElement("tr");
+
+        const tdMin = document.createElement("td");
+        const tdMax = document.createElement("td");
+        const tdW = document.createElement("td");
+        const tdDel = document.createElement("td");
+
+        const inMin = document.createElement("input");
+        inMin.className = "range-input";
+        inMin.type = "number";
+        inMin.step = "1";
+        inMin.placeholder = "min";
+        inMin.value = (r.min === undefined || r.min === null) ? "" : String(r.min);
+        inMin.dataset.idx = String(idx);
+        inMin.dataset.field = "min";
+
+        const inMax = document.createElement("input");
+        inMax.className = "range-input";
+        inMax.type = "number";
+        inMax.step = "1";
+        inMax.placeholder = "max";
+        inMax.value = (r.max === undefined || r.max === null) ? "" : String(r.max);
+        inMax.dataset.idx = String(idx);
+        inMax.dataset.field = "max";
+
+        const inW = document.createElement("input");
+        inW.className = "range-input";
+        inW.type = "number";
+        inW.step = "1";
+        inW.placeholder = "weight";
+        inW.value = (r.weight === undefined || r.weight === null) ? "" : String(r.weight);
+        inW.dataset.idx = String(idx);
+        inW.dataset.field = "weight";
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "row-del-btn";
+        delBtn.type = "button";
+        delBtn.textContent = "🗑";
+        delBtn.dataset.idx = String(idx);
+
+        tdMin.appendChild(inMin);
+        tdMax.appendChild(inMax);
+        tdW.appendChild(inW);
+        tdDel.appendChild(delBtn);
+
+        tr.appendChild(tdMin);
+        tr.appendChild(tdMax);
+        tr.appendChild(tdW);
+        tr.appendChild(tdDel);
+
+        settings.tbody.appendChild(tr);
+      });
+    }
+
+    function renderSettingsFormForKey(presetKey) {
+      if (!draft) return;
+      draftCurrentKey = presetKey;
+      const cfg = draft.presets[presetKey] || deepClone(DEFAULT_PRESETS[presetKey]);
+
+      if (settings.questionCountInput) settings.questionCountInput.value = String(cfg.questionCount ?? "");
+      if (settings.termCountInput) settings.termCountInput.value = String(cfg.termCount ?? "");
+      if (settings.allowCarryInput) settings.allowCarryInput.checked = !!cfg.allowCarry;
+
+      const ops = Array.isArray(cfg.operations) ? cfg.operations : [];
+      settings.opChecks.forEach(chk => {
+        chk.checked = ops.includes(chk.value);
+      });
+
+      const ranges = Array.isArray(cfg.numberRanges) ? cfg.numberRanges : [];
+      renderRangesTable(ranges);
+    }
+
+    function readSettingsFormToPreset(presetKey) {
+      if (!draft) return null;
+
+      const qc = parseInt(settings.questionCountInput?.value || "", 10);
+      const tc = parseInt(settings.termCountInput?.value || "", 10);
+      const allowCarry = !!settings.allowCarryInput?.checked;
+      const ops = settings.opChecks.filter(c => c.checked).map(c => c.value);
+
+      if (!Number.isFinite(qc) || qc < 1) return { error: "questionCount phải là số >= 1" };
+      if (!Number.isFinite(tc) || tc < 2) return { error: "termCount phải là số >= 2" };
+      if (!ops.length) return { error: "Bạn phải chọn ít nhất 1 phép tính (operations)." };
+
+      const oldCfg = draft.presets[presetKey] || deepClone(DEFAULT_PRESETS[presetKey]);
+      const ranges = Array.isArray(oldCfg.numberRanges) ? deepClone(oldCfg.numberRanges) : [];
+
+      // Validate ranges
+      if (!ranges.length) return { error: "numberRanges phải có ít nhất 1 dòng." };
+      for (let i = 0; i < ranges.length; i++) {
+        const r = ranges[i];
+        const max = parseInt(r.max, 10);
+        const weight = parseFloat(r.weight);
+        const minRaw = (r.min === undefined || r.min === null || String(r.min).trim() === "") ? null : parseInt(r.min, 10);
+
+        if (!Number.isFinite(max) || max <= 0) return { error: `range #${i + 1}: max phải là số > 0` };
+        if (!Number.isFinite(weight) || weight <= 0) return { error: `range #${i + 1}: weight phải là số > 0` };
+        if (minRaw !== null && (!Number.isFinite(minRaw) || minRaw < 0)) return { error: `range #${i + 1}: min phải là số >= 0 (hoặc để trống)` };
+        if (minRaw !== null && minRaw > max) return { error: `range #${i + 1}: min không được lớn hơn max` };
+      }
+
+      return {
+        questionCount: qc,
+        operations: ops,
+        termCount: tc,
+        allowCarry,
+        numberRanges: ranges.map(r => {
+          const out = { max: parseInt(r.max, 10), weight: parseFloat(r.weight) };
+          if (r.min !== undefined && r.min !== null && String(r.min).trim() !== "") out.min = parseInt(r.min, 10);
+          return out;
+        })
+      };
+    }
+
+    // Settings events
+    if (settings.overlay) {
+      settings.overlay.addEventListener("click", (e) => {
+        if (e.target === settings.overlay) closeSettings();
+      });
+    }
+    settings.closeBtn && settings.closeBtn.addEventListener("click", closeSettings);
+    settings.cancelBtn && settings.cancelBtn.addEventListener("click", closeSettings);
+
+    settings.presetSelect && settings.presetSelect.addEventListener("change", () => {
+      if (!draft) return;
+      const k = settings.presetSelect.value;
+      draft.selectedPresetKey = k;
+      renderSettingsFormForKey(k);
+      hideSettingsError();
+    });
+
+    settings.addRangeBtn && settings.addRangeBtn.addEventListener("click", () => {
+      if (!draft || !draftCurrentKey) return;
+      const cfg = draft.presets[draftCurrentKey] || deepClone(DEFAULT_PRESETS[draftCurrentKey]);
+      cfg.numberRanges = Array.isArray(cfg.numberRanges) ? cfg.numberRanges : [];
+      cfg.numberRanges.push({ min: "", max: 99, weight: 50 });
+      draft.presets[draftCurrentKey] = cfg;
+      renderRangesTable(cfg.numberRanges);
+    });
+
+    // Delegate input changes + delete row
+    settings.tbody && settings.tbody.addEventListener("click", (e) => {
+      const t = e.target;
+      if (!(t instanceof HTMLElement)) return;
+      if (t.matches("button.row-del-btn")) {
+        const idx = parseInt(t.dataset.idx || "", 10);
+        if (!draft || !draftCurrentKey || !Number.isFinite(idx)) return;
+        const cfg = draft.presets[draftCurrentKey];
+        if (!cfg || !Array.isArray(cfg.numberRanges)) return;
+        cfg.numberRanges.splice(idx, 1);
+        renderRangesTable(cfg.numberRanges);
+      }
+    });
+
+    settings.tbody && settings.tbody.addEventListener("input", (e) => {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement)) return;
+      const idx = parseInt(t.dataset.idx || "", 10);
+      const field = t.dataset.field;
+      if (!draft || !draftCurrentKey || !Number.isFinite(idx) || !field) return;
+      const cfg = draft.presets[draftCurrentKey] || deepClone(DEFAULT_PRESETS[draftCurrentKey]);
+      cfg.numberRanges = Array.isArray(cfg.numberRanges) ? cfg.numberRanges : [];
+      if (!cfg.numberRanges[idx]) return;
+      cfg.numberRanges[idx][field] = t.value;
+      draft.presets[draftCurrentKey] = cfg;
+    });
+
+    settings.resetBtn && settings.resetBtn.addEventListener("click", () => {
+      if (!draft || !draftCurrentKey) return;
+      draft.presets[draftCurrentKey] = deepClone(DEFAULT_PRESETS[draftCurrentKey]);
+      renderSettingsFormForKey(draftCurrentKey);
+      hideSettingsError();
+    });
+
+    settings.saveBtn && settings.saveBtn.addEventListener("click", () => {
+      if (!draft) return;
+      hideSettingsError();
+
+      const presetKey = settings.presetSelect ? settings.presetSelect.value : (draft.selectedPresetKey || DEFAULT_SELECTED_PRESET_KEY);
+      const maybe = readSettingsFormToPreset(presetKey);
+      if (!maybe) return;
+      if (maybe.error) {
+        showSettingsError(maybe.error);
+        return;
+      }
+
+      // Update draft
+      draft.presets[presetKey] = maybe;
+      draft.selectedPresetKey = presetKey;
+
+      // Password confirm (HHmm)
+      pwdModal.open({
+        title: "Xác nhận lưu cấu hình",
+        desc: "Nhập mật khẩu (HHmm - 4 số). Nhấn Enter để xác nhận.",
+        onOk: () => {
+          appConfig = draft;
+          saveAppConfig(appConfig);
+          closeSettings();
+        }
+      });
+    });
+
+
+    const AUTOSAVE_DEBOUNCE_MS = 450;
+    let autosaveTimer = null;
+
+    function showDraftSavedMessage() {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mi = String(now.getMinutes()).padStart(2, "0");
+      const ss = String(now.getSeconds()).padStart(2, "0");
+      const el = document.getElementById("summary");
+      if (!el) return;
+      const msg = `💾 Đã lưu tạm lúc ${hh}:${mi}:${ss}`;
+      const existing = (el.innerHTML || "").trim();
+      if (!existing) el.innerHTML = msg;
+      else el.innerHTML = existing + "<br/>" + msg;
+    }
+
+    function scheduleAutosave() {
+      if (autosaveTimer) clearTimeout(autosaveTimer);
+      autosaveTimer = setTimeout(() => {
+        if (typeof currentExamId !== "number") return;
+        const ans = collectAnswersFromInputs();
+        saveAnswerState(currentExamId, ans);
+      }, AUTOSAVE_DEBOUNCE_MS);
+    }
+
+    function flushSaveDraft(showMessage) {
+      if (autosaveTimer) {
+        clearTimeout(autosaveTimer);
+        autosaveTimer = null;
+      }
+      if (typeof currentExamId !== "number") return;
+      const ans = collectAnswersFromInputs();
+      saveAnswerState(currentExamId, ans);
+      if (showMessage) showDraftSavedMessage();
+    }
+
+    // Auto-save answers as user types (debounced)
+    const qContainer = document.getElementById("question-container");
+    if (qContainer) {
+      qContainer.addEventListener("input", (e) => {
+        const t = e.target;
+        if (t && t.classList && t.classList.contains("answer-input")) {
+          scheduleAutosave();
+        }
+      });
+      qContainer.addEventListener("change", (e) => {
+        const t = e.target;
+        if (t && t.classList && t.classList.contains("answer-input")) {
+          scheduleAutosave();
+        }
+      });
+    }
+
+    // Bind main actions
+    document.getElementById("submitBtn").onclick = () => { flushSaveDraft(false); handleSubmit(state); };
+    document.getElementById("showAnswerBtn").onclick = () => {
+      pwdModal.open({
+        title: "Xác nhận hiện đáp án",
+        desc: "Nhập mật khẩu (HHmm - 4 số). Nhấn Enter để xác nhận.",
+        onOk: () => {
+          flushSaveDraft(false);
+          showAnswers(state);
+        }
+      });
+    };
+
+    const saveDraftBtn = document.getElementById("saveDraftBtn");
+    if (saveDraftBtn) {
+      saveDraftBtn.onclick = () => flushSaveDraft(true);
+    }
 
     const newBtn = document.getElementById("newSetBtn");
     if (newBtn) {
       newBtn.onclick = () => {
-        // Require time-based password (HHmm) before generating a new set
-        pwdModal.open(() => {
-          const qs = buildNewQuestions();
-          saveQuestions(qs);
-          clearSummary();
-
-          state = { questions: qs, submitted: false, answersShown: false };
-          renderQuestions(state.questions);
+        pwdModal.open({
+          title: "Xác nhận đổi đề",
+          desc: "Nhập mật khẩu (HHmm - 4 số). Nhấn Enter để xác nhận.",
+          onOk: () => {
+            const presetKey = appConfig.selectedPresetKey || DEFAULT_SELECTED_PRESET_KEY;
+            const cfg = normalizeConfig(appConfig.presets[presetKey]);
+            const qs = buildNewQuestions(cfg);
+            currentExamId = saveExamState(presetKey, cfg, qs);
+            currentConfigSnapshot = cfg;
+            saveAnswerState(currentExamId, {});
+            clearSummary();
+            state = { questions: qs, submitted: false, answersShown: false };
+            renderQuestions(state.questions);
+          }
         });
       };
     }
-  });})();
+
+    const cfgBtn = document.getElementById("configBtn");
+    if (cfgBtn) {
+      cfgBtn.onclick = () => openSettings();
+    }
+  });
+})();

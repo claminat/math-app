@@ -15,12 +15,94 @@
 
 <div class="actions">
   <button id="newSetBtn">Đổi đề</button>
+  <button id="configBtn">Cấu hình</button>
+  <button id="saveDraftBtn">Lưu tạm</button>
   <button id="submitBtn">Nộp bài</button>
   <button id="showAnswerBtn">Hiện đáp án</button>
 </div>
 
 <div id="summary"></div>
 
+
+
+<!-- Settings modal -->
+<div id="settingsOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+  <div class="modal modal--wide">
+    <div class="modal-header">
+      <div class="modal-title" id="settingsTitle">Cấu hình đề bài</div>
+      <button id="settingsCloseBtn" class="icon-btn" type="button" aria-label="Đóng">✕</button>
+    </div>
+
+    <div class="settings-grid">
+      <label class="field">
+        <div class="field-label">Lớp (Preset)</div>
+        <select id="presetSelect" class="modal-select">
+          <option value="grade1">grade1</option>
+          <option value="grade2">grade2</option>
+          <option value="grade3">grade3</option>
+          <option value="grade4">grade4</option>
+        </select>
+        <div class="field-hint">Áp dụng khi bấm “Đổi đề” lần sau.</div>
+      </label>
+
+      <label class="field">
+        <div class="field-label">Số câu hỏi (questionCount)</div>
+        <input id="questionCountInput" class="modal-input" type="number" min="1" step="1" />
+      </label>
+
+      <label class="field">
+        <div class="field-label">Số hạng (termCount)</div>
+        <input id="termCountInput" class="modal-input" type="number" min="2" step="1" />
+      </label>
+
+      <label class="field field--checkbox">
+        <input id="allowCarryInput" type="checkbox" />
+        <span>Cho phép nhớ / mượn (allowCarry)</span>
+      </label>
+
+      <div class="field field--full">
+        <div class="field-label">Phép tính (operations)</div>
+        <div class="ops">
+          <label><input type="checkbox" class="opCheck" value="addition" /> Cộng</label>
+          <label><input type="checkbox" class="opCheck" value="subtraction" /> Trừ</label>
+          <label><input type="checkbox" class="opCheck" value="multiplication" /> Nhân</label>
+          <label><input type="checkbox" class="opCheck" value="division" /> Chia</label>
+        </div>
+      </div>
+
+      <div class="field field--full">
+        <div class="field-label">Number ranges (min/max/weight)</div>
+        <div class="ranges-wrap">
+          <table class="ranges-table">
+            <thead>
+              <tr>
+                <th>min</th>
+                <th>max</th>
+                <th>weight</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="rangesTbody"></tbody>
+          </table>
+          <button id="addRangeBtn" class="small-btn" type="button">+ Thêm range</button>
+          <div id="settingsError" class="modal-error hidden"></div>
+          <div class="modal-hint">
+            • Tổng weight không cần = 100 (tự tính theo tỷ trọng).<br/>
+            • min bỏ trống: hiểu là từ 0.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button id="resetPresetBtn" type="button">Khôi phục mặc định</button>
+      <div class="modal-actions-right">
+        <button id="settingsCancelBtn" type="button">Hủy</button>
+        <button id="settingsSaveBtn" type="button">Lưu cấu hình</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Password modal for generating new set -->
 <div id="pwdOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="pwdTitle">
