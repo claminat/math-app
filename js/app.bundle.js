@@ -319,6 +319,14 @@ function clearSummary() {
 
     const table = document.createElement("table");
     table.className = "question-table table table-bordered table-sm table-hover align-middle";
+
+    // Column widths: # = 2/12, Question = 5/12, Answer = 5/12
+    const colgroup = document.createElement("colgroup");
+    const c1 = document.createElement("col"); c1.style.width = "16.666%";
+    const c2 = document.createElement("col"); c2.style.width = "41.667%";
+    const c3 = document.createElement("col"); c3.style.width = "41.667%";
+    colgroup.appendChild(c1); colgroup.appendChild(c2); colgroup.appendChild(c3);
+    table.appendChild(colgroup);
     table.innerHTML = `
       <thead>
         <tr>

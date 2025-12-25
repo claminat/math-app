@@ -38,65 +38,94 @@
       <button id="settingsCloseBtn" class="btn btn-sm btn-outline-secondary" type="button" aria-label="Đóng">✕</button>
     </div>
 
-    <div class="settings-grid">
-      <label class="field">
-        <div class="field-label">Lớp (Preset)</div>
-        <select id="presetSelect" class="form-select form-select-sm">
-          <option value="grade1">grade1</option>
-          <option value="grade2">grade2</option>
-          <option value="grade3">grade3</option>
-          <option value="grade4">grade4</option>
-        </select>
-        <div class="field-hint">Áp dụng khi bấm “Đổi đề” lần sau.</div>
-      </label>
+    
+    <div class="table-responsive mt-2">
+      <table class="table table-sm align-middle mb-2">
+        <tbody>
+          <tr>
+            <th class="w-25 small text-muted">Lớp (Preset)</th>
+            <td>
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <select id="presetSelect" class="form-select form-select-sm" style="max-width:160px">
+                  <option value="grade1">grade1</option>
+                  <option value="grade2">grade2</option>
+                  <option value="grade3">grade3</option>
+                  <option value="grade4">grade4</option>
+                </select>
+                <span class="small text-muted">Áp dụng khi bấm “Đổi đề” lần sau.</span>
+              </div>
+            </td>
+          </tr>
 
-      <label class="field">
-        <div class="field-label">Số câu hỏi (questionCount)</div>
-        <input id="questionCountInput" class="form-control form-control-sm" type="number" min="1" step="1" />
-      </label>
+          <tr>
+            <th class="small text-muted">Số câu hỏi (questionCount)</th>
+            <td><input id="questionCountInput" class="form-control form-control-sm" type="number" min="1" step="1" /></td>
+          </tr>
 
-      <label class="field">
-        <div class="field-label">Số hạng (termCount)</div>
-        <input id="termCountInput" class="form-control form-control-sm" type="number" min="2" step="1" />
-      </label>
+          <tr>
+            <th class="small text-muted">Số hạng (termCount)</th>
+            <td><input id="termCountInput" class="form-control form-control-sm" type="number" min="2" step="1" /></td>
+          </tr>
 
-      <label class="field field--checkbox">
-        <input id="allowCarryInput" type="checkbox" />
-        <span>Cho phép nhớ / mượn (allowCarry)</span>
-      </label>
+          <tr>
+            <th class="small text-muted">Cho phép nhớ / mượn (allowCarry)</th>
+            <td>
+              <div class="form-check">
+                <input id="allowCarryInput" class="form-check-input" type="checkbox" />
+                <label class="form-check-label" for="allowCarryInput">Bật</label>
+              </div>
+            </td>
+          </tr>
 
-      <div class="field field--full">
-        <div class="field-label">Phép tính (operations)</div>
-        <div class="ops">
-          <label><input type="checkbox" class="opCheck" value="addition" /> Cộng</label>
-          <label><input type="checkbox" class="opCheck" value="subtraction" /> Trừ</label>
-          <label><input type="checkbox" class="opCheck" value="multiplication" /> Nhân</label>
-          <label><input type="checkbox" class="opCheck" value="division" /> Chia</label>
-        </div>
-      </div>
+          <tr>
+            <th class="small text-muted">Phép tính (operations)</th>
+            <td>
+              <div class="d-flex flex-wrap gap-3">
+                <div class="form-check">
+                  <input class="form-check-input opCheck" type="checkbox" value="addition" id="op_add" />
+                  <label class="form-check-label" for="op_add">Cộng</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input opCheck" type="checkbox" value="subtraction" id="op_sub" />
+                  <label class="form-check-label" for="op_sub">Trừ</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input opCheck" type="checkbox" value="multiplication" id="op_mul" />
+                  <label class="form-check-label" for="op_mul">Nhân</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input opCheck" type="checkbox" value="division" id="op_div" />
+                  <label class="form-check-label" for="op_div">Chia</label>
+                </div>
+              </div>
+            </td>
+          </tr>
 
-      <div class="field field--full">
-        <div class="field-label">Number ranges (min/max/weight)</div>
-        <div class="ranges-wrap">
-          <table class="ranges-table">
-            <thead>
-              <tr>
-                <th>min</th>
-                <th>max</th>
-                <th>weight</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="rangesTbody"></tbody>
-          </table>
-          <button id="addRangeBtn" class="small-btn" type="button">+ Thêm range</button>
-          <div id="settingsError" class="modal-error hidden"></div>
-          <div class="modal-hint">
-            • Tổng weight không cần = 100 (tự tính theo tỷ trọng).<br/>
-            • min bỏ trống: hiểu là từ 0.
-          </div>
-        </div>
-      </div>
+          <tr>
+            <th class="small text-muted">Number ranges (min/max/weight)</th>
+            <td>
+              <div class="ranges-wrap">
+                <table class="ranges-table table table-bordered table-sm mb-2">
+                  <thead>
+                    <tr>
+                      <th style="width: 25%;">min</th>
+                      <th style="width: 25%;">max</th>
+                      <th style="width: 25%;">weight</th>
+                      <th style="width: 1%;"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="rangesBody"></tbody>
+                </table>
+                <button id="addRangeBtn" type="button" class="btn btn-outline-secondary btn-sm">+ Thêm range</button>
+                <div class="small text-muted mt-2">
+                  • Tổng weight không cần = 100 (tự tính theo tỷ trọng).<br/>
+                  • min bỏ trống: hiểu là từ 0.
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <div class="modal-actions d-flex justify-content-end gap-2 mt-3">

@@ -36,3 +36,18 @@ body { background: #fff; }
 .field-label { font-size: 12px; color: #6c757d; margin-bottom: 4px; }
 .modal-error { color: #dc3545; font-size: 12px; margin-top: 6px; }
 .modal-hint { color: #6c757d; font-size: 12px; margin-top: 10px; }
+
+
+/* Column wrapping */
+.question-table .q-col { white-space: normal; }
+.question-table .a-col { white-space: nowrap; }
+
+/* Correct/Wrong highlighting (restored) */
+tr.question-row.correct td { background: rgba(25, 135, 84, 0.08); }
+tr.question-row.wrong td { background: rgba(220, 53, 69, 0.08); }
+
+tr.question-row.correct input.answer-input { border-color: #198754; box-shadow: 0 0 0 .2rem rgba(25,135,84,.15); }
+tr.question-row.wrong input.answer-input { border-color: #dc3545; box-shadow: 0 0 0 .2rem rgba(220,53,69,.15); }
+
+/* Make answer column header align with inputs */
+.question-table th { vertical-align: middle; }
